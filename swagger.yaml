@@ -1,0 +1,938 @@
+openapi: 3.0.0
+info:
+  description: "This is the official server api for Vinebill payment system . 
+    For more info visit https://www.vinebill.com  
+    To use this api you must have an api key `auth-key` to test the authorization 
+    filters."
+  title: Vinebill Payment system api built written NODEJS And served by swagger open api
+  version: 1.0.0
+
+servers:
+  - url: http://api.vinebill.com
+    description:  Production server
+host: http://localhost
+basePath: "/api/v1"
+paths:
+  /user/sign-up:
+    post:
+      summary: creates a user that doesnt exist in the database and return a success message or an error 
+      tags:
+        - user
+      consumes:
+       - "application/json"
+       - "application/xml"
+      operationId: Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ogaga"
+                password:
+                  type: string
+                  example: "12345"
+                email:
+                  type: string
+                  example: "vinebill@vinebill.com" 
+              required:
+                - username
+                - password
+                - email
+      responses:
+        "200":
+          description: User with username ogaga was created succesfully
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: "user with username ogaga was created"
+        "400":
+          description: User with username ogaga or /email/ exists 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Username or password is incorrect"
+  /user/login:
+    post:
+      summary: To login a user
+      tags:
+        - user
+      description: Logs a user wich already exists in the database
+      operationId: login
+      parameters:
+          name: user
+          description: The `user` object
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "ogaga"
+              password:
+                type: string
+                example: "12345" 
+            required:
+              - username
+              - password
+      responses:
+        "200":
+          description: User Authenticated from provided credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "ogaga"
+                  lastName:
+                    type: string
+                    example: "Adjaro"
+                  username:
+                    type: string
+                    example: "ogaga"
+                  role:
+                    type: string
+                    example: "user"
+                  jwtToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWIxMmUxOTdlMDZhNzZjY2RlZmMxMjEiLCJpZCI6IjVlYjEyZTE5N2UwNmE3NmNjZGVmYzEyMSIsImlhdCI6MTU4ODc1ODE1N30.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
+        "400":
+          description: The user does not exist in the database 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Incorrect password/ username "
+  
+  /user/get-all:
+    get:
+      summary: Get a list of all users
+      tags:
+        - user
+      description: Restricted to admin users.
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: An array of all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "5eb12e197e06a76ccdefc121"
+                    firstName:
+                      type: string
+                      example: "ogaga"
+                    lastName:
+                      type: string
+                      example: "Adjaro"
+                    username:
+                      type: string
+                      example: "ogaga"
+                    email:
+                      type: string
+                      example: "ogaga@gmail.com"
+                    role:
+                      type: string
+                      example: "User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /user/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: User id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    get:
+      summary: Get a single user by id
+      tags:
+        - user
+      description: Admin users can access any user record, regular users are restricted to their own user record.
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Jason"
+                  lastName:
+                    type: string
+                    example: "Watmore"
+                  username:
+                    type: string
+                    example: "jason"
+                  role:
+                    type: string
+                    example: "user"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  
+  /user/update/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: User id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Update a particular user by id
+      tags:
+        - user
+      description: A user can update details.
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the records updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Jason"
+                  lastName:
+                    type: string
+                    example: "Watmore"
+                  username:
+                    type: string
+                    example: "jason"
+                  wallet: 
+                     type: object
+                     properties:
+                        availableBalance:
+                            type: string
+                            example: "NG1234"
+                        walletPin:
+                            type: string
+                            example: "2345677"      
+                  role:
+                    type: string
+                    example: "user"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /user/delete/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: User id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Delete a particular user by id
+      tags:
+        - user
+      description: A user can be deleted by only Admins.
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User can be deleted
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: "user with username ogaga was deleted"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"        
+
+  /user/{id}/refresh-tokens:
+    parameters:
+      - in: path
+        name: id
+        description: User id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    get:
+      summary: Get a list of all refresh tokens (active and revoked) of the user with the specified id
+      tags:
+        - user
+      description: Admin users can access any user's refresh tokens, regular users are restricted to their own refresh tokens.
+      operationId: getRefreshTokens
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: An array of refresh tokens for the specified user id
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      example: "79ea9a5e825da7c27d30839c89295071842f2a44b22e917aaf795126f4486509d8511c6fdedb6f1e"
+                    expires:
+                      type: string
+                      example: "2020-06-24T03:29:13.871Z"
+                    created:
+                      type: string
+                      example: "2020-06-17T03:29:13.871Z"
+                    createdByIp:
+                      type: string
+                      example: "127.0.0.1"
+                    isExpired:
+                      type: boolean
+                      example: false
+                    isActive:
+                      type: boolean
+                      example: true
+                    revoked:
+                      type: string
+                      example: "2020-06-17T03:29:13.871Z"
+                    revokedByIp:
+                      type: string
+                      example: "127.0.0.1"                    
+                    replacedByToken:
+                      type: string
+                      example: "a01d3818db64961742f249beeded65739e9c3d1019570ea48ea820d274eac607043a6cbefd23c297"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  
+  /merchant/sign-up:
+    post:
+      summary: creates a merchant that doesnt exist in the database and return a success message or an error 
+      tags:
+        - merchant
+      consumes:
+       - "application/json"
+       - "application/xml"
+      operationId: Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ogaga"
+                password:
+                  type: string
+                  example: "12345"
+                email:
+                  type: string
+                  example: "vinebill@vinebill.com" 
+              required:
+                - username
+                - password
+                - email
+      responses:
+        "200":
+          description: User with username ogaga was created succesfully
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: "merchant with username ogaga was created"
+        "400":
+          description: Merchant with username ogaga or /email/ exists 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Username or password is incorrect"
+  /merchant/login:
+    post:
+      summary: To login a merchant
+      tags:
+        - merchant
+      description: Logs a merchant wich already exists in the database
+      operationId: login
+      parameters:
+          name: merchant
+          description: The `merchant` object
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "ogaga"
+              password:
+                type: string
+                example: "12345" 
+            required:
+              - username
+              - password
+      responses:
+        "200":
+          description: Merchant Authenticated from provided credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "ogaga"
+                  lastName:
+                    type: string
+                    example: "Adjaro"
+                  username:
+                    type: string
+                    example: "ogaga"
+                  role:
+                    type: string
+                    example: "merchant"
+                  jwtToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWIxMmUxOTdlMDZhNzZjY2RlZmMxMjEiLCJpZCI6IjVlYjEyZTE5N2UwNmE3NmNjZGVmYzEyMSIsImlhdCI6MTU4ODc1ODE1N30.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
+        "400":
+          description: The user does not exist in the database 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Incorrect password/ username "
+  
+  /merchant/get-all:
+    get:
+      summary: Get a list of all merchants
+      tags:
+        - merchant
+      description: Restricted to admins.
+      operationId: getAllMerchants
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: An array of all merchants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "5eb12e197e06a76ccdefc121"
+                    firstName:
+                      type: string
+                      example: "ogaga"
+                    lastName:
+                      type: string
+                      example: "Adjaro"
+                    username:
+                      type: string
+                      example: "ogaga"
+                    email:
+                      type: string
+                      example: "ogaga@gmail.com"
+                    role:
+                      type: string
+                      example: "merchant"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /merchant/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Merchant id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    get:
+      summary: Get a single merchant by id
+      tags:
+        - merchant
+      description: Admin users can access any merchant record, regular merchants are restricted to their own merchant record.
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Ogaga"
+                  lastName:
+                    type: string
+                    example: "Adjaro"
+                  username:
+                    type: string
+                    example: "jason"
+                  role:
+                    type: string
+                    example: "merchant"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /merchant/update/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Merchant id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Update a particular merchant by id
+      tags:
+        - merchant
+      description: A merchant can update details unique to the merchant.
+      operationId: updateMerchant
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the records updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Jason"
+                  lastName:
+                    type: string
+                    example: "Watmore"
+                  username:
+                    type: string
+                    example: "jason"
+                  wallet: 
+                     type: object
+                     properties:
+                        availableBalance:
+                            type: string
+                            example: "NG1234"
+                        walletPin:
+                            type: string
+                            example: "2345677"
+                  users:
+                  type: []
+                  description: array of users belonging to this particular merchant     
+                  role:
+                    type: string
+                    example: "merchant"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /merchant/delete/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Merchant id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Delete a particular merchant by id
+      tags:
+        - merchant
+      description: A merchant can be deleted by Admins only.
+      operationId: deleteMerchant
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Merchant can be deleted
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: "merchant with username ogaga was deleted"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"        
+
+  /admin/login:
+    post:
+        summary: To login an admin
+        tags:
+        - admin
+        description: Logs in an admin which already exists in the database
+        operationId: login
+        parameters:
+            name: user
+            description: The `admin` object
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ogaga"
+                password:
+                  type: string
+                  example: "12345" 
+              required:
+                - username
+                - password
+        responses:
+          "200":
+            description: Admin Authenticated from provided credentials
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "5eb12e197e06a76ccdefc121"
+                    firstName:
+                      type: string
+                      example: "ogaga"
+                    lastName:
+                      type: string
+                      example: "Adjaro"
+                    username:
+                      type: string
+                      example: "ogaga"
+                    role:
+                      type: string
+                      example: "Admin"
+                    jwtToken:
+                      type: string
+                      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWIxMmUxOTdlMDZhNzZjY2RlZmMxMjEiLCJpZCI6IjVlYjEyZTE5N2UwNmE3NmNjZGVmYzEyMSIsImlhdCI6MTU4ODc1ODE1N30.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
+          "400":
+            description: The admin does not exist in the database 
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Incorrect password/ username "
+  
+  /admin/sign-up:
+    post:
+      summary: creates an admin that doesnt exist in the database and return a success message or an error 
+      tags:
+      - admin
+      consumes:
+       - "application/json"
+       - "application/xml"
+      operationId: Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ogaga"
+                password:
+                  type: string
+                  example: "12345"
+                email:
+                  type: string
+                  example: "vinebill@vinebill.com" 
+                unique-key:
+                  type: string
+                  example: "ymnlkf"
+              required:
+                - username
+                - password
+                - email
+                - unique-key
+      responses:
+        "200":
+          description: Creating n admin that has a unique key
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: " Admin with username ogaga was created"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+ 
+  /admin/get-all:
+    get:
+      summary: Get a list of all admins
+      tags:
+        - admin
+      description: Restricted to a single super Admin users.
+      operationId: getAllAdmins
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: An array of all admins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "5eb12e197e06a76ccdefc121"
+                    firstName:
+                      type: string
+                      example: "ogaga"
+                    lastName:
+                      type: string
+                      example: "Adjaro"
+                    username:
+                      type: string
+                      example: "ogaga"
+                    email:
+                      type: string
+                      example: "ogaga@gmail.com"
+                    role:
+                      type: string
+                      example: "Admin"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /admin/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Admin id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    get:
+      summary: Get a single admin by id
+      tags:
+        - admin
+      description: The Super Admin users can access any admin record, regular admins are restricted to their own user record.
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the specified admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Paul"
+                  lastName:
+                    type: string
+                    example: "Ericson"
+                  username:
+                    type: string
+                    example: "Ericson"
+                  role:
+                    type: string
+                    example: "admin"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  
+  /admin/update/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: admin id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Update a particular merchant by id
+      tags:
+        - admin
+      description: An admin can update details unique to the admin.
+      operationId: updateAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Details of the records updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "5eb12e197e06a76ccdefc121"
+                  firstName:
+                    type: string
+                    example: "Jason"
+                  lastName:
+                    type: string
+                    example: "Watmore"
+                  username:
+                    type: string
+                    example: "jason"
+                  users:
+                    type: []
+                    description: array of users belonging to this particular admin  
+                  merchants:
+                    type: []
+                    description: array of merchants belonging to this particular admin   
+                  role:
+                    type: string
+                    example: "admin"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /admin/delete{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Admin id
+        required: true
+        example: "5eb12e197e06a76ccdefc121"
+        schema:
+          type: string
+    post:
+      summary: Delete a particular admin by id
+      tags:
+        - admin
+      description: An admin can be deleted by super Admins only.
+      operationId: deleteAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin can be deleted
+          content:
+            application/json:
+              schema:
+                type: string
+                properties:
+                  message:
+                    type: string
+                    example: "admin with username ogaga was deleted"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"        
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid, or the user does not have access to perform the action
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Unauthorized"
+    NotFoundError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Not Found"
+  

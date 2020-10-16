@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epayment-api-deployment
+  labels:
+    app: epayment-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: epayment-api
+  template:
+    metadata:
+      labels:
+        app: epayment-api
+    spec:
+      containers:
+        - name: epayment-api
+      image: epaymentSystem/epayment-api:1.0.0
+      ports:
+         - containerPort: 8080

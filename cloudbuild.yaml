@@ -1,0 +1,13 @@
+steps:
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/vinebillserver/vinebillcloud', '.']
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/vinebillserver/vinebillcloud']
+# Deploy container image to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: ['run', 'deploy', 'vinebillcloud', '--image', 'gcr.io/vinebillserver/vinebillcloud', '--region', 'europe-west4', '--platform', 'managed', '--allow-unauthenticated']
+images:
+- gcr.io/vinebillbackend/vinebillcloud

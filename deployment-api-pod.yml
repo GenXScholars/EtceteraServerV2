@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: epayment-api
+  labels:
+    name: epayment-api
+spec:
+    containers:
+     - name: epayment-api
+    image: epaymentSystem/simple-api:1.0.0
+    ports:
+      - containerPort: 8080
